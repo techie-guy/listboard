@@ -1,13 +1,17 @@
-#define GLAD_GL_IMPLEMENTATION
+#include "imgui.h"
+#include <GLFW/glfw3.h>
+#define GLAD_GLES2_IMPLEMENTATION
 #include "Application.h"
 #include "Logger.h"
+
+#define IMGUI_DISABLE_FILE_FUNCTIONS
 
 Application::Application(const int windowWidth, const int windowHeight, const char* windowTitle)
 {
 	AppWidth = windowWidth;
 	AppHeight = windowHeight;
 
-	loadConfig("assets/config.cfg");
+	Logger::Debug("Amogus %d", 69420);
 
 	initWindow(windowTitle);
 }
@@ -22,10 +26,12 @@ void Application::initWindow(const char* windowTitle)
 {
 	// Init GLFW
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+	// glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
+	glsl_version = "#version 100";
 
 	window = glfwCreateWindow(AppWidth, AppHeight, windowTitle, NULL, NULL);
 	if (window == NULL)
@@ -38,36 +44,55 @@ void Application::initWindow(const char* windowTitle)
 	glfwSwapInterval(1); // Turn On Vsync
 
 	// Load Glad
-	int version = gladLoadGL(glfwGetProcAddress);
+#if defined(_PLATFORM_NATIVE)
+	int version = gladLoadGLES2(glfwGetProcAddress);
 	if (version == 0)
 	{
 		Logger::Error("Failed to initialize OpenGL context");
 		glfwTerminate();
 	}
+#endif
 
-	// Init ImGui
+	initImGui();
+}
+
+void Application::initImGui()
+{
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 	ImGui::StyleColorsDark();
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init("#version 330");
+	ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
 void Application::mainLoop()
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+#if defined(__EMSCRIPTEN__)
+	io.IniFilename = NULL;
+	EMSCRIPTEN_MAINLOOP_BEGIN
+#else
 	while (!glfwWindowShouldClose(window))
+#endif
 	{
 		glfwPollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
+		ImGui::Begin("A");
+		ImGui::Text("Balls");
+		ImGui::End();
+
+		ImGui::Begin("B");
+		ImGui::Text("Poop");
+		ImGui::End();
 
 		ImGui::Render();
 		glViewport(0, 0, AppWidth, AppHeight);
@@ -85,50 +110,9 @@ void Application::mainLoop()
 
 		glfwSwapBuffers(window);
 	}
-}
-
-void Application::loadConfig(const char* filePath)
-{
-	try
-	{
-		appConfig.readFile(filePath);
-	}
-	catch(const libconfig::FileIOException& fioex)
-	{
-		Logger::Error("Error in reading %s: [%s]", filePath, fioex.what());
-		exit(EXIT_FAILURE);
-	}
-	catch(const libconfig::ParseException &pex)
-	{
-		Logger::Error("Error in parsing %s: [%s]", filePath, pex.what());
-		exit(EXIT_FAILURE);
-	}
-}
-
-libconfig::Setting& Application::readFromConfig()
-{
-	try
-	{
-		return appConfig.getRoot();
-	}
-	catch(const libconfig::SettingNotFoundException &nfex)
-	{
-		Logger::Error("No settings in config file");
-		exit(EXIT_FAILURE);
-	}
-}
-
-libconfig::Setting& Application::readFromConfig(const char* string)
-{
-	try
-	{
-		return appConfig.lookup(string);
-	}
-	catch(const libconfig::SettingNotFoundException &nfex)
-	{
-		Logger::Error("No '%s' setting in config file", string);
-		exit(EXIT_FAILURE);
-	}
+#if defined(__EMSCRIPTEN__)
+	EMSCRIPTEN_MAINLOOP_END;
+#endif
 }
 
 void Application::cleanup()
@@ -137,5 +121,6 @@ void Application::cleanup()
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
+	glfwDestroyWindow(window);
 	glfwTerminate();
 }
