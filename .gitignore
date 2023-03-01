@@ -3,6 +3,4 @@ bin
 build
 compile_commands.json
 imgui.ini
-generate_compile_commands.py
 assets
-output.html

@@ -17,8 +17,8 @@
  #include <functional>
  static std::function<void()>            MainLoopForEmscriptenP;
  static void MainLoopForEmscripten()     { MainLoopForEmscriptenP(); }
- #define EMSCRIPTEN_MAINLOOP_BEGIN       MainLoopForEmscriptenP = [&]()
- #define EMSCRIPTEN_MAINLOOP_END         ; emscripten_set_main_loop(MainLoopForEmscripten, 0, true)
+ #define EMSCRIPTEN_MAINLOOP_BEGIN       MainLoopForEmscriptenP = [&]() {
+ #define EMSCRIPTEN_MAINLOOP_END         }; emscripten_set_main_loop(MainLoopForEmscripten, 0, true)
 #endif
 
 #include <GLFW/glfw3.h>
@@ -45,4 +45,6 @@ private:
 	void initImGui();
 	void mainLoop();
 	void cleanup();
+
+	void ImGuiFrame(ImGuiIO& io);
 };

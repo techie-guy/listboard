@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 3.2.1)
+cmake_minimum_required(VERSION 3.25)
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generates compile_commands.json file for clangd, can be turned off if not needed
 
 set(IMGUI_DIR third_party/imgui)
 set(GLAD_DIR third_party/glad)
@@ -14,21 +15,26 @@ set(LINK_OPTIONS)
 set(LINK_LIBRARIES)
 set(INCLUDE_DIRS include ${IMGUI_DIR} ${IMGUI_DIR}/backends)
 
-if($ENV{COMPILE_FOR_WASM})
+set(PLATFORM "Native" CACHE STRING "Platform to build for. Defaults to Native")
+
+project(listboard)
+
+if(PLATFORM MATCHES "Emscripten")
+	message("Configuring for Emscripten")
 	set(COMPILE_DEFINITIONS _PLATFORM_WASM)
 	set(CMAKE_TOOLCHAIN_FILE $ENV{EMSDK_HOME}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake)
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
 	set(LINK_OPTIONS ${LINK_OPTIONS} -sUSE_GLFW=3 -sWASM=1 -sALLOW_MEMORY_GROWTH=1 -sNO_EXIT_RUNTIME=0 -sASSERTIONS=1)
 	set(LINK_LIBRARIES ${LINK_LIBRARIES} -lglfw3 -lGLESv2 -lEGL)
-else()
+elseif(PLATFORM MATCHES "Native")
 	set(COMPILE_DEFINITIONS _PLATFORM_NATIVE)
 	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(GLFW3 REQUIRED glfw3)
 	set(INCLUDE_DIRS ${INCLUDE_DIRS} ${GLAD_DIR}/include)
 	set(LINK_LIBRARIES ${LINK_LIBRARIES} ${GLFW3_LIBRARIES})
+else()
+	message("No Platform Specified")
 endif()
-
-project(listboard)
 
 add_executable(listboard ${SOURCES})
 target_compile_options(listboard PUBLIC ${COMPILE_OPTIONS})
