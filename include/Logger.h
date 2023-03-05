@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdio>
+#include <iostream>
 
 // Color Codes
 // https://gist.github.com/iamnewton/8754917
@@ -21,45 +21,40 @@ namespace Logger
 {
 	namespace
 	{
-		template<typename... Args>
-		void Log(const char* msg, Args... args)
+		void Log()
 		{
-			printf(msg, args...);
-			printf(COLOR_RESET);
-			printf("\n");
+			std::cout << std::endl;
 		}
 
-		template<typename... Args>
-		void Log(const char* color, const char* prefix, const char* msg, Args... args)
+		template<typename First, typename ... Strings>
+		void Log(First arg, const Strings&... rest)
 		{
-			printf(COLOR_BOLD_WHITE);
-			printf("[%s]   ", prefix);
-			printf(color);
-			Log(msg, args...);
+			std::cout << arg;
+			Log(rest...);
 		}
 	}
 
-	template<typename... Args>
-	void Debug(const char* msg, Args... args)
+	template<typename First, typename ... Strings>
+	void Debug(First arg, const Strings&... rest)
 	{
-		Log(COLOR_WHITE, "Debug", msg, args...);
+		Log(COLOR_BOLD_WHITE, "[Debug]   ", COLOR_WHITE, arg, rest...);
 	}
 
-	template<typename... Args>
-	void Info(const char* msg, Args... args)
+	template<typename First, typename ... Strings>
+	void Error(First arg, const Strings&... rest)
 	{
-		Log(COLOR_BLUE, "Info", msg, args...);
+		Log(COLOR_BOLD_WHITE, "[Error]   ", COLOR_RED, arg, rest...);
 	}
 
-	template<typename... Args>
-	void Error(const char* msg, Args... args)
+	template<typename First, typename ... Strings>
+	void Info(First arg, const Strings&... rest)
 	{
-		Log(COLOR_RED, "Error", msg, args...);
+		Log(COLOR_BOLD_WHITE, "[Info]   ", COLOR_BLUE, arg, rest...);
 	}
 
-	template<typename... Args>
-	void Warn(const char* msg, Args... args)
+	template<typename First, typename ... Strings>
+	void Warn(First arg, const Strings&... rest)
 	{
-		Log(COLOR_YELLOW, "Warning", msg, args...);
+		Log(COLOR_BOLD_WHITE, "[Warn]   ", COLOR_YELLOW, arg, rest...);
 	}
 };
