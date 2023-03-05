@@ -3,4 +3,4 @@ bin
 build
 compile_commands.json
 imgui.ini
-assets
+emcc-build

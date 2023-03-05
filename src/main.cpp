@@ -3,7 +3,7 @@
 #if !defined(AppWidth) && !defined(AppHeight)
 	#define AppWidth 1280
 	#define AppHeight 720
-	#define AppTitle "Listboard"
+	#define AppTitle "Test"
 #endif
 
 int main()
