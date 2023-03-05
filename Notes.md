@@ -1,5 +1,5 @@
 # Imgui Theme (taken from https://github.com/ocornut/imgui/issues/707#issuecomment-917151020)
-```
+```cpp
 void ImGuiTheme(ImGuiStyle& style)
 {
 	ImVec4* colors = ImGui::GetStyle().Colors;
